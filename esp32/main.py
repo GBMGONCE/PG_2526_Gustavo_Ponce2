@@ -218,6 +218,8 @@ async def handle_client(reader, writer):
             start_idx = request_str.find("action=") + 7
             cmd = request_str[start_idx:start_idx+1]
             
+            print(f"Interacción Web: Comando recibido -> '{cmd}'")
+            
             # Enviar directamente por puerto Serial al Arduino Nano
             uart.write(cmd.encode())
             
@@ -229,6 +231,7 @@ async def handle_client(reader, writer):
             await writer.awrite(response.encode())
             
         elif "GET / " in request_str or "GET /index.html" in request_str:
+            print("Interacción Web: Interfaz gráfica (HTML) solicitada.")
             # Servir la interfaz gráfica al entrar a la IP
             response = (
                 "HTTP/1.1 200 OK\r\n"
@@ -257,27 +260,13 @@ async def handle_client(reader, writer):
 # ==========================================
 async def main():
     print("Iniciando servidor web asíncrono (uasyncio)...")
+    
+    # Obtener la IP actual para mostrar el enlace de acceso
+    wlan = network.WLAN(network.STA_IF)
+    ip = wlan.ifconfig()[0] if wlan.active() else "IP_Desconocida"
+    
     server = await asyncio.start_server(handle_client, "0.0.0.0", 80)
-    
-    # Obtener IP para mostrarla en terminal de forma inteligente
-    wlan_sta = network.WLAN(network.STA_IF)
-    wlan_ap = network.WLAN(network.AP_IF)
-    
-    if wlan_sta.isconnected():
-        ip = wlan_sta.ifconfig()[0]
-        modo = "Wi-Fi Local"
-    elif wlan_ap.active():
-        ip = wlan_ap.ifconfig()[0]
-        modo = "Punto de Acceso (ESP32)"
-    else:
-        ip = "0.0.0.0"
-        modo = "Desconectado"
-    
-    print(f"==========================================")
-    print(f"Modo de red: {modo}")
-    print(f"Servidor activo en: http://{ip}")
-    print(f"==========================================")
-    print("Listo para operar la grúa.")
+    print("Servidor activo en el puerto 80. Listo para operar la grúa.")
     
     while True:
         # Tarea en espera permanente, aquí pueden agregarse otros procesos concurrentes si fuera necesario.
