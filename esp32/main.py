@@ -1,5 +1,6 @@
 import uasyncio as asyncio
 from machine import UART, Pin
+import network
 
 # ==========================================
 # CONFIGURACIÓN UART Y PINES
@@ -211,6 +212,8 @@ async def handle_client(reader, writer):
             start_idx = request_str.find("action=") + 7
             cmd = request_str[start_idx:start_idx+1]
             
+            print(f"Interacción Web: Comando recibido -> '{cmd}'")
+            
             # Enviar directamente por puerto Serial al Arduino Nano
             uart.write(cmd.encode())
             
@@ -219,6 +222,7 @@ async def handle_client(reader, writer):
             await writer.awrite(response.encode())
             
         elif "GET / " in request_str or "GET /index.html" in request_str:
+            print("Interacción Web: Interfaz gráfica (HTML) solicitada.")
             # Servir la interfaz gráfica al entrar a la IP
             response = (
                 "HTTP/1.1 200 OK\r\n"
@@ -247,8 +251,16 @@ async def handle_client(reader, writer):
 # ==========================================
 async def main():
     print("Iniciando servidor web asíncrono (uasyncio)...")
+    
+    # Obtener la IP actual para mostrar el enlace de acceso
+    wlan = network.WLAN(network.STA_IF)
+    ip = wlan.ifconfig()[0] if wlan.active() else "IP_Desconocida"
+    
     server = await asyncio.start_server(handle_client, "0.0.0.0", 80)
-    print("Servidor activo en el puerto 80. Listo para operar la grúa.")
+    print("==================================================")
+    print(f"👉 ACCEDE AL MANDO DE LA GRÚA EN: http://{ip}")
+    print("==================================================")
+    print("Servidor activo en el puerto 80. Listo para operar.")
     
     while True:
         # Tarea en espera permanente, aquí pueden agregarse otros procesos concurrentes si fuera necesario.
