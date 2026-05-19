@@ -1,5 +1,6 @@
 import uasyncio as asyncio
 from machine import UART, Pin
+import network
 
 # ==========================================
 # CONFIGURACIÓN UART Y PINES
@@ -199,6 +200,12 @@ async def handle_client(reader, writer):
             
         request_str = request_line.decode('utf-8').strip()
         
+        # --- TELEMETRÍA DE RED ---
+        if "GET /cmd?action=" in request_str:
+            pass # Se imprime más abajo junto con el UART para ser más limpio
+        elif "GET / " in request_str or "GET /index.html" in request_str:
+            print("[HTTP] Cliente ha solicitado la interfaz web.")
+            
         # Leer resto de cabeceras hasta salto de línea doble, para limpiar el buffer
         while True:
             line = await reader.readline()
@@ -213,6 +220,9 @@ async def handle_client(reader, writer):
             
             # Enviar directamente por puerto Serial al Arduino Nano
             uart.write(cmd.encode())
+            
+            # --- TELEMETRÍA UART ---
+            print(f"[TELEMETRÍA] Petición HTTP recibida. Enviando por UART -> '{cmd}'")
             
             # Respuesta rápida para liberar el socket
             response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nOK"
@@ -248,7 +258,26 @@ async def handle_client(reader, writer):
 async def main():
     print("Iniciando servidor web asíncrono (uasyncio)...")
     server = await asyncio.start_server(handle_client, "0.0.0.0", 80)
-    print("Servidor activo en el puerto 80. Listo para operar la grúa.")
+    
+    # Obtener IP para mostrarla en terminal de forma inteligente
+    wlan_sta = network.WLAN(network.STA_IF)
+    wlan_ap = network.WLAN(network.AP_IF)
+    
+    if wlan_sta.isconnected():
+        ip = wlan_sta.ifconfig()[0]
+        modo = "Wi-Fi Local"
+    elif wlan_ap.active():
+        ip = wlan_ap.ifconfig()[0]
+        modo = "Punto de Acceso (ESP32)"
+    else:
+        ip = "0.0.0.0"
+        modo = "Desconectado"
+    
+    print(f"==========================================")
+    print(f"Modo de red: {modo}")
+    print(f"Servidor activo en: http://{ip}")
+    print(f"==========================================")
+    print("Listo para operar la grúa.")
     
     while True:
         # Tarea en espera permanente, aquí pueden agregarse otros procesos concurrentes si fuera necesario.
