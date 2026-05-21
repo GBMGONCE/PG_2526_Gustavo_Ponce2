@@ -31,8 +31,9 @@ def connect_wifi(ssid, password):
 # ----------------------------------------------------
 # CREDENCIALES WI-FI - Reemplazar por las redes reales
 # ----------------------------------------------------
-WIFI_SSID = "TU_SSID_AQUI"
-WIFI_PASSWORD = "TU_PASSWORD_AQUI"
+WIFI_SSID = "DESKTOP-L8DNB2E 0462"
+WIFI_PASSWORD = "J4284o1!"
 
 # Ejecutar la conexión al encender
 connect_wifi(WIFI_SSID, WIFI_PASSWORD)
+
