@@ -200,6 +200,12 @@ async def handle_client(reader, writer):
             
         request_str = request_line.decode('utf-8').strip()
         
+        # --- TELEMETRÍA DE RED ---
+        if "GET /cmd?action=" in request_str:
+            pass # Se imprime más abajo junto con el UART para ser más limpio
+        elif "GET / " in request_str or "GET /index.html" in request_str:
+            print("[HTTP] Cliente ha solicitado la interfaz web.")
+            
         # Leer resto de cabeceras hasta salto de línea doble, para limpiar el buffer
         while True:
             line = await reader.readline()
@@ -216,6 +222,9 @@ async def handle_client(reader, writer):
             
             # Enviar directamente por puerto Serial al Arduino Nano
             uart.write(cmd.encode())
+            
+            # --- TELEMETRÍA UART ---
+            print(f"[TELEMETRÍA] Petición HTTP recibida. Enviando por UART -> '{cmd}'")
             
             # Respuesta rápida para liberar el socket
             response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nOK"
@@ -257,10 +266,7 @@ async def main():
     ip = wlan.ifconfig()[0] if wlan.active() else "IP_Desconocida"
     
     server = await asyncio.start_server(handle_client, "0.0.0.0", 80)
-    print("==================================================")
-    print(f"👉 ACCEDE AL MANDO DE LA GRÚA EN: http://{ip}")
-    print("==================================================")
-    print("Servidor activo en el puerto 80. Listo para operar.")
+    print("Servidor activo en el puerto 80. Listo para operar la grúa.")
     
     while True:
         # Tarea en espera permanente, aquí pueden agregarse otros procesos concurrentes si fuera necesario.
