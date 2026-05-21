@@ -233,12 +233,7 @@ async def handle_client(reader, writer):
         elif "GET / " in request_str or "GET /index.html" in request_str:
             print("Interacción Web: Interfaz gráfica (HTML) solicitada.")
             # Servir la interfaz gráfica al entrar a la IP
-            response = (
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html; charset=utf-8\r\n"
-                "Connection: close\r\n\r\n"
-                + html_content
-            )
+            response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n" + html_content
             await writer.awrite(response.encode())
             
         else:
@@ -272,8 +267,8 @@ async def main():
         # Tarea en espera permanente, aquí pueden agregarse otros procesos concurrentes si fuera necesario.
         await asyncio.sleep(1)
 
-# Iniciar rutina asíncrona
+# Ejecutar el servidor al final de main.py de manera segura
 try:
     asyncio.run(main())
 except KeyboardInterrupt:
-    print("Servidor detenido por usuario.")
+    print("\nServidor web detenido desde el teclado.")

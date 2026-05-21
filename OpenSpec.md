@@ -81,3 +81,12 @@ El programa del Arduino Nano está diseñado de forma **no bloqueante**.
    - *Escenario de ejemplo:* Si el operador empuja el Joystick del Carro hacia adelante (+150 PWM) pero un comando remoto intenta retraer el carro hacia atrás (-200 PWM), la resultante será un leve retroceso de -50 PWM.
 3. **Límites Físicos:** Se asegura la protección de los drivers y motores limitando los valores calculados usando la función matemática `constrain()`.
 4. **Ejecución Stepper:** La llamada `stepper.runSpeed()` de la librería *AccelStepper* se ejecuta en cada repetición de la función `loop()`, asegurando así pasos calculados fluidos y consistentes sin utilizar retrasos artificiales (`delay()`).
+
+---
+
+## 6. Flujo de Inicio y Conectividad (boot.py)
+
+El proceso de arranque del ESP32 está diseñado para ser robusto y amigable con el desarrollo:
+1. **Menú de Inicio (REPL):** Durante los primeros 5 segundos del arranque, se presenta un menú interactivo por terminal serie. Si se selecciona la opción "2", se interrumpe la ejecución del código para liberar la consola REPL. Esto facilita enormemente la modificación y subida de archivos (como `main.py` o `boot.py`) sin que el bucle principal bloquee el puerto serie. Si no hay intervención en 5 segundos, avanza automáticamente.
+2. **Conexión Wi-Fi Asistida:** Intenta conectarse a la red Wi-Fi configurada parpadeando el LED de estado (GPIO 2). 
+3. **Fallback a Modo AP:** Si tras 10 segundos no logra conectarse a la red Wi-Fi en modo Estación (STA), el sistema no falla, sino que activa automáticamente su propio Punto de Acceso (AP) llamado `GRUA_TORRE`. Esto permite que el control de la grúa siga operando incluso en sitios sin conexión a internet externa.
