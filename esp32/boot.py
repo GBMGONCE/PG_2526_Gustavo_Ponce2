@@ -4,7 +4,13 @@ import time
 def connect_wifi(ssid, password):
     print("Iniciando conexión Wi-Fi...")
     wlan = network.WLAN(network.STA_IF)
+    
+    # Limpiar estado interno del Wi-Fi para evitar "Wifi Internal State Error"
+    wlan.active(False)
+    time.sleep(0.5)
     wlan.active(True)
+    wlan.disconnect()
+    time.sleep(0.5)
     
     if not wlan.isconnected():
         print(f"Conectando a la red {ssid}...")
