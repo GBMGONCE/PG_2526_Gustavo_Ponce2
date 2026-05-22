@@ -173,18 +173,26 @@ El proceso de arranque del ESP32 está diseñado para ser robusto y amigable con
 
 ---
 
-## 7. Historial de Cambios y Commits (Git Log)
+## 7. Historial de Cambios y Actualizaciones (Git Log)
 
-A continuación, se documenta la evolución del proyecto desde sus inicios hasta las últimas funciones implementadas:
+A continuación, se documenta la evolución del proyecto organizando cada actualización por fecha y nombrando sus características clave basándonos en los commits realizados ese día:
 
-| Fecha | Commit / Cambio | Descripción de los Cambios Realizados |
-|-------|----------------|--------------------------------------|
-| 2026-05-13 | `Initial commit` | Inicialización del repositorio base. |
-| 2026-05-13 | `I1` | Creación de la estructura del proyecto y primeros archivos C++ (Arduino) y Python (ESP32). |
-| 2026-05-18 | `Update main.py` | Configuración inicial de la interfaz web HTML embebida y el socket asíncrono para recibir botones de control de la grúa. |
-| 2026-05-19 | `TELEMETRIA Y IP EN LA CONSOLA` | **Nueva Función:** Se implementaron los prints de telemetría HTTP y UART para monitorear peticiones en tiempo real y mostrar la IP asignada en la consola para un fácil acceso. |
-| 2026-05-19 | `Merge branch 'main'` | Sincronización del historial principal en GitHub. |
-| 2026-05-20 | `CONEXION A WIFI` | **Nueva Función:** Implementación en `boot.py` para la gestión de la red inalámbrica de manera confiable. |
-| 2026-05-20 | `Update boot.py` | Refinamiento de la lógica de conexión y temporización del módulo Wi-Fi. |
-| 2026-05-20 | `Merge branch 'main'` | Sincronización final tras la implementación de las funciones de red. |
-| 2026-05-21 | `EDICION FINAL FUNCIONAL` | **Versión Final:** Se integró el Menú Interactivo de 5 segundos (Bypass REPL), indicación visual del LED (GPIO 2), corrección del error de Thonny IDE al liberar el puerto serie, cierre seguro de `asyncio` y se retiró el fallback del Punto de Acceso (AP) para mantener el sistema cerrado a redes conocidas. |
+### 📅 Actualización [2026-05-13]: Inicialización y Estructura Base
+- **Commits asociados:** `Initial commit`, `I1`
+- **Descripción:** Se creó el repositorio y se establecieron los cimientos del proyecto subiendo los primeros archivos en C++ para el Arduino Nano y en Python para el ESP32, definiendo la estructura de carpetas base.
+
+### 📅 Actualización [2026-05-18]: Despliegue de Interfaz Web
+- **Commits asociados:** `Update main.py`
+- **Descripción:** Configuración inicial de la interfaz de usuario. Se integró el código HTML/CSS/JS embebido y se programó el socket asíncrono básico para recibir los comandos desde los botones de la grúa.
+
+### 📅 Actualización [2026-05-19]: Telemetría y Monitorización
+- **Commits asociados:** `TELEMETRIA Y IP EN LA CONSOLA`, `Merge branch 'main'`
+- **Descripción:** **Nuevas Funciones.** Se implementaron los prints de telemetría HTTP y UART para permitir monitorear las peticiones en tiempo real. Además, se añadió la funcionalidad para que el ESP32 muestre su IP asignada en formato URL para un fácil acceso.
+
+### 📅 Actualización [2026-05-20]: Implementación de Red Inalámbrica
+- **Commits asociados:** `CONEXION A WIFI`, `Update boot.py`, `Merge branch 'main'`
+- **Descripción:** **Nuevas Funciones.** Desarrollo del archivo `boot.py` para la gestión inteligente de la red Wi-Fi. Se refinó la lógica de conexión y se configuraron las temporizaciones de red de manera confiable.
+
+### 📅 Actualización [2026-05-21]: Edición Final, Menú de Inicio y Correcciones
+- **Commits asociados:** `EDICION FINAL FUNCIONAL`
+- **Descripción:** **Versión Final Funcional.** Esta actualización integró un Menú Interactivo de 5 segundos al arrancar (Bypass REPL), indicación visual usando el LED (GPIO 2), y corrigió de forma definitiva el error de `Acceso Denegado` de Thonny IDE. También se implementó un cierre seguro para `asyncio` y se retiró el fallback del Punto de Acceso (AP).
