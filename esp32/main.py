@@ -16,175 +16,219 @@ led = Pin(2, Pin.OUT)
 # INTERFAZ WEB HTML/CSS/JS (Responsiva)
 # ==========================================
 # Todo el HTML integrado como string para facilitar un servidor de archivo único
-html_content = """
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Control Grúa Torre</title>
-    <style>
+html_content = """<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>CRANE_OS Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
-            margin: 0;
-            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #000000;
+            color: #e2e2e2;
+            overflow: hidden;
             touch-action: manipulation;
         }
-        h1 { color: #00ADB5; margin-bottom: 5px; }
-        .subtitle { color: #aaa; margin-bottom: 20px; font-size: 0.9rem; }
-        
-        .control-group {
-            background-color: #1f2326;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
+        .hazard-pattern {
+            background: repeating-linear-gradient(
+                45deg,
+                #ffd700,
+                #ffd700 20px,
+                #000000 20px,
+                #000000 40px
+            );
         }
-        .control-group h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.1rem;
-            color: #eeeeee;
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        .gauge-svg {
+            transform: rotate(-90deg);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #131313;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ffd700;
         }
         
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .btn {
-            background-color: #393E46;
-            border: none;
-            border-radius: 12px;
-            color: white;
-            padding: 20px 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.1s;
+        /* Prevenir selección de texto en botones móviles */
+        button {
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
         }
-        .btn:active, .btn.active {
-            background-color: #00ADB5;
-            transform: scale(0.95);
-        }
-        
-        .btn.stop {
-            background-color: #FF2E63;
-            grid-column: 2;
-            grid-row: 2;
-        }
-        .btn.stop:active, .btn.stop.active {
-            background-color: #D90429;
-        }
-        
-        .empty { visibility: hidden; }
-        
-        .status-bar {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #222831;
-            border-radius: 8px;
-            display: inline-block;
-            min-width: 200px;
-            font-family: monospace;
-            color: #00ADB5;
-            font-size: 1.1rem;
-        }
     </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#393939",
+                      "on-surface": "#e2e2e2",
+                      "primary-container": "#ffd700",
+                      "surface-container": "#1f1f1f",
+                      "surface": "#131313",
+              },
+            },
+          },
+        }
+    </script>
 </head>
-<body>
-    <h1>Grúa Torre</h1>
-    <div class="subtitle">Panel de Control Dual (Web)</div>
-    
-    <div class="control-group">
-        <h2>Elevación y Giro</h2>
-        <div class="grid-container">
-            <button class="btn empty"></button>
-            <button class="btn" onmousedown="startCmd('U')" onmouseup="stopCmd()" ontouchstart="startCmd('U')" ontouchend="stopCmd()">Subir</button>
-            <button class="btn empty"></button>
-            
-            <button class="btn" onmousedown="startCmd('L')" onmouseup="stopCmd()" ontouchstart="startCmd('L')" ontouchend="stopCmd()">Izq</button>
-            <button class="btn stop" onmousedown="startCmd('S')" ontouchstart="startCmd('S')">STOP</button>
-            <button class="btn" onmousedown="startCmd('R')" onmouseup="stopCmd()" ontouchstart="startCmd('R')" ontouchend="stopCmd()">Der</button>
-            
-            <button class="btn empty"></button>
-            <button class="btn" onmousedown="startCmd('D')" onmouseup="stopCmd()" ontouchstart="startCmd('D')" ontouchend="stopCmd()">Bajar</button>
-            <button class="btn empty"></button>
-        </div>
-    </div>
+<body class="h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface text-primary-container border-b-4 border-primary-container docked full-width top-0 flex justify-between items-center w-full px-8 h-16 z-50">
+<div class="flex items-center gap-4">
+<span class="font-headline-lg text-headline-lg font-black text-primary-container tracking-tighter uppercase">CRANE_OS</span>
+<span class="bg-primary-container text-black px-2 py-0.5 font-label-bold text-label-bold rounded-sm">V4.2.0</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-primary-container">
+<span class="material-symbols-outlined text-xl">wifi</span>
+<span class="font-label-bold text-label-bold uppercase">LINK: STABLE</span>
+</div>
+<div class="flex items-center gap-4 border-l border-outline-variant pl-6">
+<button class="material-symbols-outlined hover:bg-surface-container-highest hover:text-primary-container p-2 transition-all">settings</button>
+<button class="material-symbols-outlined hover:bg-surface-container-highest hover:text-primary-container p-2 transition-all">notifications</button>
+<button class="material-symbols-outlined hover:bg-surface-container-highest hover:text-primary-container p-2 transition-all text-red-500">power_settings_new</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden pt-0">
+<!-- SideNavBar -->
+<nav class="bg-surface-container border-r-2 border-outline-variant flex flex-col h-full w-64 z-40">
+<div class="p-6 border-b border-outline-variant">
+<div class="font-headline-lg text-headline-lg text-primary-container leading-none">OPERATOR_01</div>
+<div class="font-label-bold text-label-bold uppercase text-gray-400 opacity-70">SECTOR_7G</div>
+</div>
+<div class="flex-1 mt-4">
+<a class="bg-primary-container text-black border-y-2 border-primary-container flex items-center px-6 py-4 w-full font-label-bold text-label-bold uppercase gap-3" href="#">
+<span class="material-symbols-outlined">settings_remote</span>
+                    Control
+                </a>
+</div>
+<div class="p-4 mt-auto">
+<button onmousedown="startCmd('S')" ontouchstart="startCmd('S')" class="w-full hazard-pattern h-24 border-4 border-black group relative overflow-hidden active:scale-95 transition-transform">
+<div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-transparent">
+<span class="bg-black text-primary-container font-black px-3 py-1 text-xl border-2 border-primary-container">EMERGENCY STOP</span>
+</div>
+</button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto p-8 flex flex-col gap-8 bg-black custom-scrollbar">
+<!-- Controls Row -->
+<div class="grid grid-cols-2 gap-8">
+<!-- GIRO CONTROL -->
+<div class="bg-surface-container border-2 border-outline-variant p-6 flex flex-col items-center">
+<div class="w-full flex justify-between items-center mb-6">
+<h2 class="font-label-bold text-label-bold uppercase bg-surface-bright px-3 py-1">GIRO (NEMA 17)</h2>
+<span class="text-primary-container font-bold">STATUS: ACTIVE</span>
+</div>
+<div class="w-full flex justify-between gap-4 mt-4">
+<button onmousedown="startCmd('L')" onmouseup="stopCmd()" ontouchstart="startCmd('L')" ontouchend="stopCmd()" class="flex-1 border-2 border-primary-container py-6 text-2xl font-bold text-primary-container hover:bg-primary-container hover:text-black transition-colors">CCW (Izquierda)</button>
+<button onmousedown="startCmd('R')" onmouseup="stopCmd()" ontouchstart="startCmd('R')" ontouchend="stopCmd()" class="flex-1 border-2 border-primary-container py-6 text-2xl font-bold text-primary-container hover:bg-primary-container hover:text-black transition-colors">CW (Derecha)</button>
+</div>
+</div>
+<!-- CARRO CONTROL -->
+<div class="bg-surface-container border-2 border-outline-variant p-6 flex flex-col">
+<div class="w-full flex justify-between items-center mb-6">
+<h2 class="font-label-bold text-label-bold uppercase bg-surface-bright px-3 py-1">CARRO (DC MOTOR)</h2>
+<span class="text-primary-container font-bold">ACTIVE</span>
+</div>
+<div class="flex gap-8 flex-1 justify-center">
+<div class="flex flex-col justify-center gap-4">
+<button onmousedown="startCmd('F')" onmouseup="stopCmd()" ontouchstart="startCmd('F')" ontouchend="stopCmd()" class="w-32 h-20 border-2 border-primary-container flex items-center justify-center text-primary-container hover:bg-primary-container hover:text-black">
+<span class="material-symbols-outlined text-4xl">add</span> (Adelante)
+</button>
+<button onmousedown="startCmd('B')" onmouseup="stopCmd()" ontouchstart="startCmd('B')" ontouchend="stopCmd()" class="w-32 h-20 border-2 border-primary-container flex items-center justify-center text-primary-container hover:bg-primary-container hover:text-black">
+<span class="material-symbols-outlined text-4xl">remove</span> (Atrás)
+</button>
+</div>
+</div>
+</div>
+</div>
 
-    <div class="control-group">
-        <h2>Carro (Traslación)</h2>
-        <div class="grid-container">
-            <button class="btn empty"></button>
-            <button class="btn" onmousedown="startCmd('F')" onmouseup="stopCmd()" ontouchstart="startCmd('F')" ontouchend="stopCmd()">Adelante</button>
-            <button class="btn empty"></button>
-            
-            <button class="btn empty"></button>
-            <button class="btn" onmousedown="startCmd('B')" onmouseup="stopCmd()" ontouchstart="startCmd('B')" ontouchend="stopCmd()">Atrás</button>
-            <button class="btn empty"></button>
-        </div>
-    </div>
+<!-- ELEVACIÓN CONTROL (Added as it was missing from design) -->
+<div class="bg-surface-container border-2 border-outline-variant p-6 flex flex-col items-center mt-2">
+<div class="w-full flex justify-between items-center mb-6">
+<h2 class="font-label-bold text-label-bold uppercase bg-surface-bright px-3 py-1">ELEVACIÓN (GANCHO)</h2>
+<span class="text-primary-container font-bold">STATUS: ACTIVE</span>
+</div>
+<div class="w-full flex justify-between gap-4 mt-4">
+<button onmousedown="startCmd('U')" onmouseup="stopCmd()" ontouchstart="startCmd('U')" ontouchend="stopCmd()" class="flex-1 border-2 border-primary-container py-6 text-2xl font-bold text-primary-container hover:bg-primary-container hover:text-black transition-colors">SUBIR</button>
+<button onmousedown="startCmd('D')" onmouseup="stopCmd()" ontouchstart="startCmd('D')" ontouchend="stopCmd()" class="flex-1 border-2 border-primary-container py-6 text-2xl font-bold text-primary-container hover:bg-primary-container hover:text-black transition-colors">BAJAR</button>
+</div>
+</div>
 
-    <div class="status-bar" id="status">Comando: Listo</div>
+</main>
+<!-- Right Sidebar - Telemetry Log -->
+<aside class="w-80 bg-surface-container border-l-2 border-outline-variant flex flex-col p-4 custom-scrollbar overflow-y-auto hidden md:flex">
+<h3 class="font-label-bold text-label-bold uppercase border-b-2 border-primary-container pb-2 mb-4 text-primary-container">REAL-TIME TELEMETRY</h3>
+<div class="flex flex-col gap-2 font-code-sm text-primary-container" id="logContainer">
+<div class="p-2 bg-black/40 border-l-2 border-primary-container"><span class="opacity-50">CRANE_OS</span> INICIADO</div>
+</div>
+</aside>
+</div>
 
-    <script>
+<script>
+        // LOGICA DE CONTROL DE LA GRUA (ESP32)
         let intervalId = null;
         
-        // Función asíncrona para enviar comando al ESP32 sin recargar la página
+        function addLog(msg) {
+            const logContainer = document.getElementById('logContainer');
+            if(!logContainer) return;
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const newLog = document.createElement('div');
+            newLog.className = 'p-2 bg-black/40 border-l-2 border-primary-container';
+            newLog.innerHTML = `<span class="opacity-50">[${time}]</span> CMD_SEND: ${msg}`;
+            logContainer.prepend(newLog);
+            if (logContainer.children.length > 20) logContainer.lastElementChild.remove();
+        }
+        
         function sendRequest(cmd) {
             fetch('/cmd?action=' + cmd).catch(err => console.error("Error enviando:", err));
         }
         
-        // Se ejecuta al presionar un botón
         function startCmd(cmd) {
             if(event) event.preventDefault();
-            document.getElementById('status').innerText = 'Comando: ' + cmd;
-            
-            // 1. Enviar el primer comando inmediatamente
+            addLog(cmd);
             sendRequest(cmd);
-            
-            // 2. Si hay un intervalo activo, limpiarlo
             if(intervalId) clearInterval(intervalId);
-            
-            // 3. Crear un ciclo repetitivo cada 200ms para evadir el "timeout" de seguridad del Arduino Nano
             if(cmd !== 'S') {
-                intervalId = setInterval(() => {
-                    sendRequest(cmd);
-                }, 200);
+                intervalId = setInterval(() => { sendRequest(cmd); }, 200);
             }
         }
         
-        // Se ejecuta al soltar el botón
         function stopCmd() {
             if(event) event.preventDefault();
-            if(intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-            document.getElementById('status').innerText = 'Comando: Stop';
-            sendRequest('S'); // Enviar comando de parada
+            if(intervalId) { clearInterval(intervalId); intervalId = null; }
+            addLog('STOP');
+            sendRequest('S');
         }
 
-        // Bloqueo del menú contextual en móviles al mantener pulsada la pantalla
         window.oncontextmenu = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
+            e.preventDefault(); e.stopPropagation(); return false;
         };
-    </script>
-</body>
-</html>
+
+        // UI Interactions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => { btn.style.transform = 'scale(0.98)'; });
+            btn.addEventListener('mouseup', () => { btn.style.transform = 'scale(1)'; });
+            btn.addEventListener('touchstart', () => { btn.style.transform = 'scale(0.98)'; });
+            btn.addEventListener('touchend', () => { btn.style.transform = 'scale(1)'; });
+        });
+</script>
+</body></html>
 """
 
 # ==========================================
